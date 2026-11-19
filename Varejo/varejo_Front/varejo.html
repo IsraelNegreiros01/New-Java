@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <!-- Define a codificação e adapta a interface a celulares e computadores. -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sistema demonstrativo para gerir chamados de suporte das lojas da Rede Varejo.">
+    <title>Central de serviços | Rede Varejo</title>
+    <!-- Mantém a estrutura, os estilos e a lógica em arquivos separados. -->
+    <link rel="stylesheet" href="./varejo.css">
+    <script src="varejo.js" defer></script>
+</head>
+<body>
+    <!-- A aplicação organiza a navegação e o conteúdo em duas colunas. -->
+    <div class="app-shell">
+        <aside class="sidebar" aria-label="Menu principal">
+            <!-- Identidade visual da central de serviços da rede. -->
+            <a class="brand" href="#inicio" aria-label="Rede Varejo, início">
+                <span class="brand__symbol" aria-hidden="true">RV</span>
+                <span class="brand__text">rede<span>varejo</span><small>central de serviços</small></span>
+            </a>
+
+            <!-- Cada botão abre uma área do sistema sem recarregar a página. -->
+            <nav id="main-navigation" class="side-nav" aria-label="Navegação da central">
+                <p class="side-nav__heading">ESPAÇO DE TRABALHO</p>
+                <button class="side-nav__link side-nav__link--active" type="button" data-page="dashboard">
+                    <span class="nav-icon" aria-hidden="true">▦</span> Visão geral
+                </button>
+                <button class="side-nav__link" type="button" data-page="tickets">
+                    <span class="nav-icon" aria-hidden="true">▤</span> Chamados
+                    <span class="side-nav__count" data-open-ticket-count>0</span>
+                </button>
+                <button class="side-nav__link" type="button" data-page="catalog">
+                    <span class="nav-icon" aria-hidden="true">▧</span> Catálogo e modelos
+                </button>
+                <button class="side-nav__link" type="button" data-page="knowledge">
+                    <span class="nav-icon" aria-hidden="true">▨</span> Base de conhecimento
+                </button>
+                <button class="side-nav__link" type="button" data-page="people">
+                    <span class="nav-icon" aria-hidden="true">♙</span> Usuários e equipes
+                </button>
+                <button class="side-nav__link" type="button" data-page="rules">
+                    <span class="nav-icon" aria-hidden="true">⚙</span> Prioridades e regras
+                </button>
+                <button class="side-nav__link" type="button" data-page="reports">
+                    <span class="nav-icon" aria-hidden="true">▥</span> Relatórios e testes
+                </button>
+            </nav>
+
+            <!-- Mostra as informações do usuário atualmente autenticado. -->
+            <div class="sidebar__footer">
+                <span id="sidebar-user-avatar" class="team-avatar" aria-hidden="true">RV</span>
+                <span class="team-details">
+                    <strong id="sidebar-user-name">Ambiente Local</strong>
+                    <small id="sidebar-user-role">Sessão local</small>
+                </span>
+            </div>
+        </aside>
+
+        <div class="workspace">
+            <!-- Barra superior com busca geral, perfil ativo e exportação dos dados. -->
+            <header class="topbar">
+                <div class="breadcrumbs"><span>Central de serviços</span><span aria-hidden="true">/</span><strong id="current-page-name">Visão geral</strong></div>
+                <label class="search-box">
+                    <span aria-hidden="true">⌕</span>
+                    <span class="visually-hidden">Buscar na central</span>
+                    <input id="global-search" type="search" placeholder="Buscar chamados..." aria-label="Buscar chamados">
+                    <kbd>/</kbd>
+                </label>
+                <div class="topbar__actions">
+                    <!-- Área com perfil logado e botões de Autenticação / Logout -->
+                    <div id="user-session" class="user-session-box"></div>
+                    <button id="export-data" class="icon-button" type="button" aria-label="Exportar dados para backup" title="Exportar backup">⇩</button>
+                </div>
+            </header>
+
+            <!-- Aviso do protótipo -->
+            <div class="demo-notice" role="note">
+                <strong>Protótipo local:</strong> Autenticação ativada. Novos cadastros são salvos no armazenamento do seu navegador.
+            </div>
+
+            <!-- O JavaScript desenha aqui os painéis da área selecionada. -->
+            <main id="inicio" class="main-content" tabindex="-1"></main>
+
+            <!-- Rodapé com informações de armazenamento e avisos acessíveis. -->
+            <footer class="footer">
+                <span>Rede Varejo · Central de serviços</span>
+                <span>Protótipo acadêmico · Sistema de Chamados</span>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Caixa de diálogo reutilizada para abrir, atualizar e encerrar chamados. -->
+    <dialog id="ticket-dialog" class="app-dialog" aria-labelledby="dialog-title">
+        <form id="ticket-form" method="dialog">
+            <div class="dialog-heading">
+                <div><p class="breadcrumb-caption">CENTRAL DE SERVIÇOS</p><h2 id="dialog-title">Novo chamado</h2></div>
+                <button class="icon-button" type="button" data-close-dialog aria-label="Fechar">×</button>
+            </div>
+            <div id="dialog-content" class="dialog-content"></div>
+            <div class="dialog-actions">
+                <button class="secondary-button" type="button" data-close-dialog>Cancelar</button>
+                <button class="primary-button" type="submit">Salvar chamado</button>
+            </div>
+        </form>
+    </dialog>
+
+    <!-- Caixa de diálogo para LOGIN e CRIAR CONTA (CADASTRO) -->
+    <dialog id="auth-dialog" class="app-dialog auth-dialog" aria-labelledby="auth-dialog-title">
+        <div class="dialog-heading">
+            <div>
+                <p class="breadcrumb-caption">ACESSO AO SISTEMA</p>
+                <h2 id="auth-dialog-title">Autenticação</h2>
+            </div>
+            <button class="icon-button" type="button" id="close-auth-modal-btn" aria-label="Fechar">×</button>
+        </div>
+        
+        <!-- Abas de navegação entre Login e Cadastro -->
+        <div class="auth-tabs">
+            <button type="button" class="auth-tab-btn auth-tab-btn--active" data-auth-tab="login">Fazer Login</button>
+            <button type="button" class="auth-tab-btn" data-auth-tab="signup">Criar Conta</button>
+        </div>
+
+        <!-- Formulário de Login -->
+        <form id="login-form" class="auth-form">
+            <div class="form-grid">
+                <label class="form-field form-field--wide">E-mail <span>*</span>
+                    <input type="email" name="loginEmail" required placeholder="exemplo@varejo.com">
+                </label>
+                <label class="form-field form-field--wide">Senha <span>*</span>
+                    <input type="password" name="loginPassword" required placeholder="Digite sua senha">
+                </label>
+            </div>
+            <div class="auth-demo-hint">
+                <small><strong>Credenciais padrão para testes:</strong><br>
+                • Solicitante: <code>loja.bh@varejo.com</code> / <code>123456</code><br>
+                • Técnico N1: <code>diego.nunes@varejo.com</code> / <code>123456</code><br>
+                • Supervisor: <code>patricia.gomes@varejo.com</code> / <code>123456</code></small>
+            </div>
+            <div class="dialog-actions">
+                <button class="primary-button" type="submit">Entrar no sistema</button>
+            </div>
+        </form>
+
+        <!-- Formulário de Criar Conta -->
+        <form id="signup-form" class="auth-form" style="display: none;">
+            <div class="form-grid">
+                <label class="form-field form-field--wide">Nome Completo <span>*</span>
+                    <input type="text" name="signupName" required placeholder="Ex.: Maria Silva">
+                </label>
+                <label class="form-field form-field--wide">E-mail <span>*</span>
+                    <input type="email" name="signupEmail" required placeholder="maria.silva@varejo.com">
+                </label>
+                <label class="form-field form-field--wide">Senha <span>*</span>
+                    <input type="password" name="signupPassword" required placeholder="Digite uma senha (mínimo 6 caracteres)" minlength="6">
+                </label>
+                <label class="form-field">Perfil de Acesso <span>*</span>
+                    <select name="signupRole" id="signup-role" required>
+                        <option value="Solicitante">Solicitante (Loja)</option>
+                        <option value="Técnico">Técnico (Suporte)</option>
+                        <option value="Supervisor">Supervisor(a) (Admin)</option>
+                    </select>
+                </label>
+                <label class="form-field">Nível de Suporte
+                    <select name="signupLevel" id="signup-level">
+                        <option value="">Sem nível (Solicitante)</option>
+                        <option value="N1">N1 · Suporte Inicial</option>
+                        <option value="N2">N2 · Suporte Especializado</option>
+                        <option value="N3">N3 · Especialista/Supervisão</option>
+                    </select>
+                </label>
+                <label class="form-field form-field--wide">Unidade <span>*</span>
+                    <select name="signupStore" id="signup-store-select" required></select>
+                </label>
+            </div>
+            <div class="dialog-actions">
+                <button class="primary-button" type="submit">Criar minha conta</button>
+            </div>
+        </form>
+    </dialog>
+
+    <!-- Região para anunciar mensagens de sucesso ou erro sem interromper o fluxo. -->
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
